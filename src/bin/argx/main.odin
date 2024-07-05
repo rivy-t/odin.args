@@ -48,7 +48,7 @@ CWSTR_to_UTF8 :: proc(
 
 WSTR_to_UTF8 :: proc(
 	wstr: WinOS.LPWSTR,
-	wstr_len: int,
+	len: int,
 	allocator := context.temp_allocator,
 ) -> (
 	result: string,
@@ -56,7 +56,7 @@ WSTR_to_UTF8 :: proc(
 ) {
 	context.allocator = allocator
 
-	if wstr_len == 0 {
+	if len == 0 {
 		return "", nil
 	}
 
@@ -64,7 +64,7 @@ WSTR_to_UTF8 :: proc(
 		WinOS.CP_UTF8, // CodePage
 		WinOS.WC_ERR_INVALID_CHARS, // dwFlags
 		wstr, // lpWideCharStr
-		i32(wstr_len) if wstr_len > 0 else -1, // cchWideChar
+		i32(len) if len > 0 else -1, // cchWideChar
 		nil, // lpMultiByteStr [out]
 		0, // cbMultiByte
 		nil, // lpDefaultChar
@@ -80,7 +80,7 @@ WSTR_to_UTF8 :: proc(
 		WinOS.CP_UTF8, // CodePage
 		WinOS.WC_ERR_INVALID_CHARS, // dwFlags
 		wstr, // lpWideCharStr
-		i32(wstr_len) if wstr_len > 0 else -1, // cchWideChar
+		i32(len) if len > 0 else -1, // cchWideChar
 		raw_data(utf8), // lpMultiByteStr [out]
 		buffer_byte_size, // cbMultiByte
 		nil, // lpDefaultChar
@@ -92,8 +92,8 @@ WSTR_to_UTF8 :: proc(
 	}
 
 	slice_end := buffer_byte_size
-	if (wstr_len < 0) && (utf8[buffer_byte_size - 1] == 0) {
-		// for indeterminate input length (wstr_len < 0), slice out the terminating NUL
+	if (len < 0) && (utf8[buffer_byte_size - 1] == 0) {
+		// for indeterminate input length, don't include the terminating NUL
 		slice_end -= 1
 	}
 
